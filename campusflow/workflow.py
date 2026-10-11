@@ -105,3 +105,26 @@ def reopen_ticket(tickets):
             return
 
     print("Ticket not found. Please enter a valid ticket ID.")
+    
+def get_work_queue(tickets):
+    priority_order = {
+        "critical": 1,
+        "high": 2,
+        "medium": 3,
+        "low": 4,
+    }
+
+    work_queue = []
+
+    for ticket in tickets:
+        if ticket["status"] == "open":
+            work_queue.append(ticket)
+
+    work_queue.sort(
+        key=lambda ticket: (
+            priority_order[ticket["priority"]],
+            int(ticket["id"][1:]),
+        )
+    )
+
+    return work_queue
