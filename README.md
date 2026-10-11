@@ -154,7 +154,7 @@ The application uses Python's standard library and does not require third-party 
 Clone the team's GitHub repository:
 
 bash
-git clone <repository-url>
+git clone https://github.com/ZachOG10/CampusFlow-team.git
 
 ### Step 2: Navigate to the Project Directory
 
@@ -169,7 +169,7 @@ On Linux and macOS, run:
 bash
 python3 main.py
 
-On systems where Python is invoked using `python`, you can run:
+On systems where Python is invoked using python, you can run:
 
 bash
 python main.py
