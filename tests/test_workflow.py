@@ -3,7 +3,8 @@ from unittest.mock import patch
 from campusflow.workflow import (
     assign_ticket,
     update_ticket_status,
-    reopen_ticket
+    reopen_ticket,
+    get_work_queue
 )
 
 
