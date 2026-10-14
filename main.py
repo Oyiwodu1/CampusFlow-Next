@@ -72,15 +72,33 @@ def main():
             print("\nYou selected Create a ticket.")
 
             title = input("Enter ticket title: ")
-            category = input("Enter ticket category: ").title()
-            urgency = input("Ticket urgency: ").lower()
+            has_digit = False
+            for char in title:
+                if char.isdigit():
+                    has_digit = True
+            while title.strip() == "" or has_digit:
+                print("Enter a valid ticket title!")
+                title = input("Enter ticket title: ")
+                has_digit = False
+                for char in title:
+                    if char.isdigit():
+                        has_digit = True
+
+            category = input("Enter ticket category(software/Hardware/Network/other): ")
+            while category.strip() == "" or category.strip().title() not in ["Network", "Hardware", "Software", "Other"]:
+                print("Invalid category.")
+                category = input("Enter ticket category(software/Hardware/Network/other): ")
+
+            urgency = input("Enter urgency (low/medium/high): ")
+            while urgency.strip().lower() not in ["low", "medium", "high"]:
+                print("Invalid urgency.")
+                urgency = input("Enter urgency (low/medium/high): ")
 
             while True:
                 try:
                     affected_users = int(
-                        input("How many users are being affected? ")
+                        input("How many users are being affected?: ")
                     )
-
                     if affected_users > 0:
                         break
 
@@ -137,12 +155,11 @@ def main():
 
         elif campus == 5:
             work_queue = get_work_queue(all_tickets)
-
             if not work_queue:
                 print("There are no open tickets in the work queue.")
             else:
                 print("\n------- WORK QUEUE -------")
-
+                
                 for ticket in work_queue:
                     print("\n------------------------------")
                     print(f"ID: {ticket['id']}")
@@ -160,5 +177,6 @@ def main():
 
         else:
             print("Enter a number from 1 to 7.")
+
 if __name__ == "__main__":
     main()

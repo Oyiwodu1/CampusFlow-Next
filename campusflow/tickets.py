@@ -3,6 +3,14 @@ def create_ticket(title, category, urgency, affected_users, existing_tickets=Non
         print("Enter a valid ticket title!")
         return None
 
+    has_digit = False
+    for char in title:
+        if char.isdigit():
+            has_digit = True
+    if has_digit:
+        print("Enter a valid ticket title!")
+        return None
+
     title = title.strip()
 
     if not isinstance(category, str):
