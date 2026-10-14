@@ -69,6 +69,7 @@ class TestTicketWorkflow(unittest.TestCase):
             update_ticket_status(self.tickets)
 
         self.assertEqual(self.tickets[0]["status"], "open")
+        self.assertIsNone(self.tickets[0]["assigned_to"])
 
     def test_assigned_ticket_can_start(self):
         with patch("builtins.input", side_effect=["T002", "1"]):
