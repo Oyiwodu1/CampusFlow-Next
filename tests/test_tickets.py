@@ -46,5 +46,9 @@ class TestTickets(unittest.TestCase):
         test_low = create_ticket("wifi", "network", "low", 2)
         self.assertEqual(test_low["priority"], "low")
 
+    def test_new_ticket_starts_with_empty_notes(self):
+        test_ticket_notes = create_ticket("wifi", "network", "high", 4)
+        self.assertEqual(test_ticket_notes["notes"], [])
+
 if __name__ == "__main__": 
     unittest.main()
