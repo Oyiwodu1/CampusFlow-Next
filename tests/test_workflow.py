@@ -95,6 +95,12 @@ class TestTicketWorkflow(unittest.TestCase):
 
         self.assertEqual(self.tickets[3]["status"], "open")
 
+    def test_resolved_ticket_cannot_be_reassigned(self):
+        with patch("builtins.input", side_effect=["T004", "Mary"]):
+            assign_ticket(self.tickets)
+
+        self.assertEqual(self.tickets[3]["assigned_to"], "John")
+
     def test_non_resolved_ticket_cannot_be_reopened(self):
         with patch("builtins.input", side_effect=["T002"]):
             reopen_ticket(self.tickets)
