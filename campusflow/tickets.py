@@ -82,8 +82,7 @@ def create_ticket(title, category, urgency, affected_users, existing_tickets=Non
         "status": "open",
         "assigned_to": None,
         "notes": [],
-        "priority": priority,
-        "notes": []
+        "priority": priority
     }
 
     return ticket
