@@ -7,9 +7,10 @@ from campusflow.workflow import (
     get_work_queue,
 )
 from campusflow.reports import generate_ticket_report
-from campusflow.search import search_tickets                #added imports
+from campusflow.search import search_tickets                #CLI Helpers
 from campusflow.reports import generate_detailed_report
 from campusflow.understanding_check import QUESTIONS, score_answers
+from campusflow.notes import add_note, get_notes
 
 def display_ticket_report(tickets):
     report = generate_ticket_report(tickets)
@@ -164,6 +165,45 @@ def understanding_check_cli():
     else:
         print("No reflections recorded.")
 
+def add_note_cli(tickets):
+    #Prompt for a note and add it to a ticket.
+    print("\n------- ADD FOLLOW-UP NOTE -------")
+    ticket_id = input("Ticket ID: ").strip()
+    author = input("Author name: ").strip()
+    message = input("Message: ").strip()
+
+    try:
+        note = add_note(tickets, ticket_id, author, message)
+    except ValueError as e:
+        print(f"\nCannot add note: {e}")
+        return
+
+    save_tickets(tickets)
+    print(f"\nNote {note['note_id']} added to {ticket_id}.")
+    print(f"By: {note['author']}")
+    print(f"Message: {note['message']}")    
+
+
+def view_notes_cli(tickets):
+    # Show all notes for a ticket, in ID order.
+    print("\n------- VIEW TICKET NOTES -------")
+    ticket_id = input("Ticket ID: ").strip()
+
+    try:
+        notes = get_notes(tickets, ticket_id)
+    except ValueError as error:
+        print(f"\nCannot view notes: {error}")
+        return
+
+    if not notes:
+        print(f"\n{ticket_id} has no notes yet.")
+        return
+
+    print(f"\nNotes for {ticket_id}:")
+    for note in notes:
+        print(f"\n[{note['note_id']}] by {note['author']}")
+        print(f"  {note['message']}")
+
 
 
 def main():
@@ -308,21 +348,18 @@ def main():
         elif campus == 9:
             understanding_check_cli()
 
-        # elif campus == 10:
-        #     print()
+        elif campus == 10:
+            add_note_cli(all_tickets)
 
-        # elif campus == 11:
-        #     print()
-
-
-
+        elif campus == 11:
+            view_notes_cli(all_tickets)
 
         elif campus == 12:
             save_tickets(all_tickets)
             print("Thank you for using CampusFlow!")
 
         else:
-            print("Enter a number from 1 to 7.")
+            print("Enter a number from 1 to 12.")
 
 if __name__ == "__main__":
     main()
