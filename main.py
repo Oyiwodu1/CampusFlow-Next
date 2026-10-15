@@ -90,8 +90,7 @@ def detailed_report_cli(tickets):
     print(f"In progress: {report['in_progress']}")
     print(f"Resolved: {report['resolved']}")
     print(f"Unresolved (open + in progress): {report['unresolved_tickets']}")
-    print(f"Resolved: {report['resolved_tickets']}")
-
+    
     print("\nTickets by priority:")
     print(f"Critical: {report['critical']}")
     print(f"High: {report['high']}")
@@ -137,6 +136,34 @@ def understanding_check_cli():
         print(f"Your answer: {entry['submitted']}")
         print(f"Correct answer: {entry['correct']}")
         print(f"{entry['explanation']}")
+    
+   #Reflection on two answers (not auto-graded)
+    print("\n========== REFLECTION (FOR MENTOR DISCUSSION) ==========")
+    print("Explain two of your choices in your own words.")
+    print("These notes are preserved for discussion and NOT part of the quiz.\n")
+
+    reflections = []
+    for question in QUESTIONS:
+        if question["id"] not in ("Q1", "Q3"):
+            continue
+
+        print(f"[{question['id']}] {question['prompt']}")
+        user_reflection = input("Your reasoning: ").strip()
+
+        if user_reflection:
+            reflections.append({"id": question["id"], "note": user_reflection})
+            print("  (Recorded for mentor review.)\n")
+        else:
+            print("  (Skipped — you can discuss this with your mentor.)\n")
+
+    if reflections:
+        print("------- LOGGED NOTES FOR MENTOR REVIEW -------")
+        for ref in reflections:
+            print(f"\n[{ref['id']}] {ref['note']}")
+        print("-------------------------------------------------------")
+    else:
+        print("No reflections recorded.")
+
 
 
 def main():
@@ -148,7 +175,7 @@ def main():
 
     campus = 0
 
-    while campus != 7:
+    while campus != 12:
         print("\n======= WELCOME TO CAMPUSFLOW =======")
         print("1. Create a ticket")
         print("2. View all tickets")
@@ -156,10 +183,15 @@ def main():
         print("4. Update ticket status")
         print("5. View work queue")
         print("6. Generate ticket report")
-        print("7. Exit")
+        print("7. Search tickets")
+        print("8. Detailed ticket report")
+        print("9. Engineering Understanding Check")
+        print("10. Add follow-up note")
+        print("11. View ticket notes")
+        print("12. Exit")
 
         try:
-            campus = int(input("Choose an option (1-7): "))
+            campus = int(input("Choose an option (1-12): "))
         except ValueError:
             print("Kindly enter a valid number.")
             continue
@@ -268,6 +300,24 @@ def main():
             display_ticket_report(all_tickets)
 
         elif campus == 7:
+            search_tickets_cli(all_tickets)
+
+        elif campus == 8:
+            detailed_report_cli(all_tickets)
+
+        elif campus == 9:
+            understanding_check_cli()
+
+        # elif campus == 10:
+        #     print()
+
+        # elif campus == 11:
+        #     print()
+
+
+
+
+        elif campus == 12:
             save_tickets(all_tickets)
             print("Thank you for using CampusFlow!")
 
