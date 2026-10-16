@@ -30,7 +30,7 @@ def generate_ticket_report(tickets):
 
     return report
 
-#new modification
+#CLI helpers for search, extended report and understanding check
 def count_by_category(tickets):
     canonical = {"network": "Network", "hardware": "Hardware",
                  "software": "Software", "other": "Other"}
