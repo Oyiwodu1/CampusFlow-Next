@@ -1,291 +1,238 @@
-# CampusFlow — Campus Technical Support Ticket Manager
+# CampusFlow Next — Campus Technical Support Ticket Manager
 
 ## About the Project
 
-CampusFlow is a Python-based command line application designed to help campus technical support teams manage technical support requests efficiently.
-The application allows users to create support tickets, calculate their priority, assign tickets to staff members, track their progress, organize a work queue, generate reports, and save ticket records for future use.
-Common problems managed by CampusFlow include Wi-Fi is down, broken laptops, software issues, and inaccessible development platforms.
+CampusFlow Next is a Python command-line application that helps campus technical
+support staff manage incoming support requests: Wi-Fi outages, faulty laptops,
+broken development environments, and inaccessible platforms. Informal reports
+get lost — CampusFlow Next records every request, calculates its priority,
+assigns responsibility, tracks progress through a defined lifecycle, and keeps
+structured follow-up notes so work is never lost between shifts.
 
-This project was developed as part of an engineering sprint to demonstrate problem-solving, modular programming, workflow management, data persistence, automated testing, and collaborative software development.
+This is an upgrade of the original CampusFlow sprint project. It adds
+multi-filter search, expanded reporting, safe JSON persistence, structured
+ticket notes, and an interactive engineering-understanding check, all within
+the original learning boundaries: Python standard library only, no web
+frameworks, no external databases, no paid APIs.
 
-## Project Objectives
-The main objectives of CampusFlow are to:
+## Team Members
+**Engineer A - Faith Owoicho  
+ROLES: Ticket validation and lifecycle safety, notes data model, JSON load validation, CLI menu wiring for notes 
+**Engineer B - Omale Moses 
+ROLES: Search and combined filtering, extended reports and analytics, interactive engineering-understanding check, notes CLI integration
 
-- Record technical support requests in a structured format.
-- Generate unique identifiers for tickets.
-- Calculate ticket priority based on urgency and the number of affected users.
-- Assign tickets to responsible staff members.
-- Track ticket progress through defined statuses.
-- Organize open tickets by priority.
-- Generate reports showing ticket statistics.
-- Save ticket information using JSON persistence.
-- Load previously saved tickets when the application starts.
-- Validate user input and handle errors appropriately.
-- Apply software engineering practices, including testing and version control.
+## Both engineers authored code, wrote automated tests, opened a substantial PR,
+and reviewed the other's PR before merge.
 
-## Features
+## Requirements
 
-## 1. Ticket Creation
+- Python 3.10 or later (uses `.casefold()`, f-strings, `unittest`).
+- No third-party packages — standard library only (`json`, `unittest`, `os`,
+  `pathlib`, `tempfile`).
 
-Users can create support tickets by providing the following information:
+## Setup
 
-- Ticket title
-- Ticket category
-- Urgency level
-- Number of affected users
+```bash
+git clone https://github.com/Oyiwodu1/CampusFlow-Next.git
+cd CampusFlow-Next
+python3 main.py
+On systems where Python is invoked as python:
 
-Each ticket receives a unique ticket ID.
+bash
+python main.py
+Running the Application
+Launch the CLI:
 
-### 2. Automatic Priority Calculation
+bash
+python3 main.py
+The menu provides:
 
-CampusFlow calculates ticket priority using the urgency level and the number of affected users.
+text
+1.  Create a ticket
+2.  View all tickets
+3.  Assign or reassign a ticket
+4.  Update ticket status
+5.  View work queue
+6.  Generate ticket report
+7.  Search tickets
+8.  Detailed ticket report
+9.  Engineering Understanding Check
+10. Add follow-up note
+11. View ticket notes
+12. Exit
+Menu highlights
+Search tickets (7) — case-insensitive substring match on title, combined
+with optional exact filters on category, status, and priority. All supplied
+filters must match (AND). Leave any prompt blank to skip that filter.
 
-The supported priority levels are:
+Detailed ticket report (8) — total tickets, counts by status, priority
+and category, unresolved count (open + in_progress), resolved count, and
+resolution percentage. Empty dataset reports 0% without crashing.
 
-- **Critical**
-- **High**
-- **Medium**
-- **Low**
+Engineering Understanding Check (9) — six multiple-choice questions about
+how CampusFlow behaves. Answers accept A/B/C/D (case-insensitive). Invalid
+input is rejected and re-prompted. After scoring, you're asked to reflect on
+two answers in your own words — reflections are stored for mentor discussion
+and are not auto-graded.
 
-This helps support teams identify and prioritize important issues.
+Add follow-up note (10) — attach a note to an open or in_progress ticket.
+Author must be non-empty; message length 5–300 characters after trimming.
+Resolved tickets reject notes until reopened.
 
-### 3. Ticket Assignment and Reassignment
+View ticket notes (11) — list all notes for a ticket in ID order
+(N001, N002, ...).
 
-Tickets can be assigned to staff members responsible for resolving reported problems.
+## Business Rules:
+Priority Calculation: Priority is calculated from urgency and affected_users, checked in this
+order; the first matching rule wins:
 
-Existing assignments can also be changed when responsibility needs to be transferred.
+Condition	Priority
+urgency == "high" AND affected_users >= 10	critical
+urgency == "high" OR affected_users >= 10	high
+urgency == "medium" OR affected_users >= 3	medium
+otherwise	low
 
-### 4. Ticket Status Management
+Ticket Lifecycle:
+open → in_progress → resolved
+                   ↘
+          (reopen) → open
+An unassigned ticket cannot move to in_progress.
 
-CampusFlow supports three ticket statuses:
+A resolved ticket cannot be reassigned or modified until it is reopened.
 
-- open — The ticket has been created and is awaiting work.
-- in_progress — A staff member is working on the ticket.
-- resolved — The reported issue has been resolved.
-Resolved tickets can be reopened when further work is required.
+Reopening sets status back to open.
 
-### 5. Priority-Based Work Queue
-The work queue organizes open tickets according to priority.
-Tickets are arranged in the following order:
+Rules to add note:
 
-1. Critical
-2. High
-3. Medium
-4. Low
-When tickets have the same priority, their numeric ticket IDs determine their order.
+Notes can only be added when status is open or in_progress.
+A resolved ticket rejects notes until reopened.
+A rejected note does not consume a note ID.
+Note IDs are per-ticket and sequential: N001, N002, ...
+Notes survive resolve, reopen, save, and reload.
 
-### 6. Ticket Reports
-The reporting feature summarizes ticket information, including:
+Work Queue
+The work queue shows only open tickets, sorted by priority
+(critical → high → medium → low), with ties broken by numeric ticket ID
+(earliest first).
 
-- Total number of tickets
-- Number of open tickets
-- Number of in-progress tickets
-- Number of resolved tickets
-- Number of critical-priority tickets
-- Number of high-priority tickets
-- Number of medium-priority tickets
-- Number of low-priority tickets
-These reports help users understand the current state of the support workload.
+Data Persistence
+Tickets are stored in:
 
-### 7. JSON Data Persistence
+text
+data/tickets.json
+The file is created automatically on first save. Each ticket is a JSON object
+with these fields:
 
-CampusFlow stores ticket records in JSON format.
+json
+{
+    "id": "T001",
+    "title": "Wi-Fi down in ICT",
+    "category": "Network",
+    "urgency": "high",
+    "affected_users": 12,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": null,
+    "notes": [
+        {"note_id": "N001", "author": "Mentor A", "message": "Router reboot attempted"}
+    ]
+}
+To start afresh: stop the application and delete data/tickets.json. On next
+launch, CampusFlow starts with an empty ticket collection. Ticket IDs and note
+IDs generate correctly after reload — they never collide with existing records.
 
-The application loads previously saved tickets when it starts and saves ticket changes so that records remain available after the application closes.
-If the data file does not exist, the application starts with an empty collection of tickets.
+Malformed JSON: if data/tickets.json cannot be parsed, the application
+refuses to load and shows a clear error rather than silently erasing data.
 
-### 8. Input Validation and Error Handling
-The application validates ticket information to reduce invalid entries.
-It also handles invalid menu selections and reports problems encountered when loading saved JSON data.
+Running the Tests:
 
-### 9. Automated Testing
-CampusFlow uses Python's built-in unittest framework to test application functionality and help identify errors.
+bash
+python3 -m unittest discover -s tests -v
 
-## Technologies Used
-- **Python 3:** Main programming language.
-- **JSON:** Format for storing ticket records.
-- **unittest:** Framework for automated testing.
-- **Git:** Version control system.
-- **GitHub:** Platform for collaborative development and code hosting.
-- **Visual Studio Code:** Development environment.
+The suite covers:
+Priority rules and boundary cases (original CampusFlow regression tests)
+Ticket validation: blank title, invalid category/urgency, zero, negative,
+float, and boolean affected_users
+Lifecycle: unassigned tickets cannot start, resolved tickets cannot skip
+reopening, reassignment of resolved tickets is rejected
+JSON persistence: missing file, malformed JSON, non-list payloads, non-dict
+entries, save/reload round-trip
+Search: title substring case-insensitivity, combined AND filters, empty
+filters, unknown query, read-only guarantee
+Reports: category counts, unresolved count, resolution percentage, empty
+dataset (0% without crash), original report shape unchanged
+Understanding check: scoring, invalid input handling, question bank shape
+Notes: validation, sequential IDs, rejected note does not consume ID,
+resolved-ticket rejection, reopen-then-accept, save/reload round-trip
 
-## Project Structure
+Expected result: Ran 90 tests ... OK.
 
-CampusFlow-team/
-│
+Project Structure:
+
+CampusFlow-Next/
 ├── main.py
-│
 ├── campusflow/
 │   ├── __init__.py
 │   ├── tickets.py
 │   ├── workflow.py
 │   ├── storage.py
-│   └── reports.py
-│
+│   ├── reports.py
+│   ├── search.py
+│   ├── notes.py
+│   └── understanding_check.py
 ├── tests/
 │   ├── __init__.py
 │   ├── test_tickets.py
 │   ├── test_workflow.py
-│   ├── test_storage.py
+│   ├── test_storage_persistence.py
 │   ├── test_reports.py
-│   └── test_storage_persistence.py
-│
-├── data/
-│   └── tickets.json
-│
+│   ├── test_search.py
+│   ├── test_notes.py
+│   └── test_understanding_check.py
 ├── docs/
-│
+│   ├── baseline-check.md
+│   ├── design-decisions.md
+│   ├── ai-learning-log.md
+│   └── engineer-b-reflections.md
+├── data/
+│   └── tickets.json         (gitignored — generated locally)
 ├── .gitignore
 └── README.md
 
-**Note:** The data/ directory may be generated locally when the application saves tickets. It is excluded from version control to avoid committing local runtime data.
 
-## Requirements
-To run CampusFlow, you need:
-- Python 3 installed on your computer.
-- A terminal or command-line interface.
-- Git, if you want to clone the repository and contribute to development.
-The application uses Python's standard library and does not require third-party packages for its core functionality.
+## Known Limitations
 
-## Installation and Setup
+Title search is substring-only. No fuzzy matching or typo correction —
+typing "wi-fi" will not match "wifi".
 
-### Step 1: Clone the Repository
+load_tickets does not deep-validate note shapes on load. It verifies
+the payload is a list of dicts, but not that each ticket's notes entries
+have valid note_id/author/message fields.
 
-Clone the team's GitHub repository:
+No concurrency protection. Two simultaneous instances writing to the same
+JSON file would race. Out of scope for a single-user CLI.
 
-bash
-git clone https://github.com/ZachOG10/CampusFlow-team.git
+No timestamps or activity history on tickets or notes.
 
-### Step 2: Navigate to the Project Directory
+Future Improvements
+Move persistence to SQLite for atomic writes and query support.
 
-bash
-cd CampusFlow-team
+Add ticket timestamps and per-ticket history.
+
+Expand search to cover note text and assignee names.
+
+Add a small staff name registry to avoid typos in the assignee field.
+
+Add more comprehensive JSON schema validation on load.
+
+Reviewed Pull Requests
+Engineer B feature PR: PR #8 — feat: add search, extended reports, understanding check, and structured notes
+
+Engineer A feature PR: PR #9 — feat: add notes data model validation and get_notes helper
+
+Both PRs were reviewed line-by-line by the other engineer, approved, and merged
+into main.
 
 
-### Step 3: Run the Application
-
-On Linux and macOS, run:
-
-bash
-python3 main.py
-
-On systems where Python is invoked using python, you can run:
-
-bash
-python main.py
-
-### Step 4: Use the Application
-
-Follow the menu displayed in the terminal to:
-
-1. Create a ticket.
-2. View all tickets.
-3. Assign or reassign a ticket.
-4. Update a ticket's status or reopen a resolved ticket.
-5. View the work queue.
-6. Generate a ticket report.
-7. Exit the application.
-
-## Running the Tests
-
-CampusFlow uses Python's built-in unittest framework.
-
-To run the complete test suite, execute:
-
-bash
-python3 -m unittest discover -s tests -v
-
-The -v option enables verbose output, displaying individual test results.
-
-A successful test run should finish with:
-
-text
-
-OK
-
-The number of tests may change as additional tests are added to the project.
-
-## Data Persistence
-
-CampusFlow stores ticket records in:
-
-text
-data/tickets.json
-
-The application loads saved records at startup and saves changes during use.
-
-The storage component supports the following behavior:
-- Load previously saved tickets.
-- Start with an empty ticket collection when the data file is missing.
-- Save ticket records in JSON format.
-- Report invalid JSON data instead of silently ignoring it.
-
-The data/ directory is excluded from version control because it contains locally generated application data.
-
-## Team Members
-
-### 1. Aondowase Zachariah
-
-**Role:** Software Engineering Fellow
-
-**Email:** [aondowasezachariahog@gmail.com](mailto:aondowasezachariahog@gmail.com)
-
-**Areas of Contribution:**
-- Ticket assignment and reassignment.
-- Ticket status transitions and reopening.
-- Priority-based work queue.
-- Ticket reporting.
-- JSON persistence integration.
-- Application integration and testing.
-
-### 2. Faith Owoicho
-
-**Role:** Software Engineering Fellow
-
-**Email:** [phatewodu@gmail.com](mailto:phatewodu@gmail.com)
-
-**Areas of Contribution:**
-- Ticket creation and validation.
-- Ticket data structure.
-- Automatic priority calculation.
-- Supporting application components and testing.
-
-## Learning Outcomes
-
-The development of CampusFlow provides practical experience in:
-- Computational thinking and problem decomposition.
-- Python functions and modules.
-- Lists and dictionaries.
-- Conditional statements and loops.
-- Input validation and exception handling.
-- File handling and JSON serialization.
-- Data persistence.
-- Automated unit testing.
-- Version control with Git.
-- Collaborative software development.
-- Debugging and application integration.
-
-## Future Improvements
-
-Possible future enhancements include:
-- A graphical user interface or web application.
-- Staff authentication and account management.
-- Ticket search and filtering.
-- Ticket creation timestamps and activity history.
-- Additional reporting and analytics.
-- More comprehensive validation of saved ticket records.
-- Database integration.
-- Improved protection against duplicate IDs when multiple application instances create tickets simultaneously.
-- Expanded automated test coverage
-
-## Project Status
-
-CampusFlow is a command line technical support ticket management application developed as an engineering sprint project.
-
-It brings together ticket creation, priority calculation, assignment, workflow management, reporting, automated testing, and JSON-based data persistence.
-
-The application provides a foundation for future improvements and additional support-management features.
-
-## License
-
+License
 No license has been specified for this project. An appropriate license can be added if the team intends to distribute or reuse the software publicly.
